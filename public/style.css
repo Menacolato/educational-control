@@ -1,0 +1,193 @@
+/* ===== RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    display: flex;
+    background-color: #f0f4f8;
+    color: #333;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    width: 240px;
+    height: 100vh;
+    background: #ffffff;
+    padding: 30px 20px;
+    border-right: 1px solid #e2e8f0;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+}
+
+.sidebar h2 {
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: #1e40af;
+    text-align: center;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar ul li {
+    padding: 12px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: 0.3s;
+    color: #1e40af;
+    font-weight: 500;
+}
+
+.sidebar ul li:hover {
+    background: #e0e7ff;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main {
+    flex: 1;
+    padding: 40px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #1e3a8a;
+}
+
+/* ===== CARD FORM ===== */
+.card {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+}
+
+.card form {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.card input, .card select {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    flex: 1;
+    transition: 0.2s;
+}
+
+.card input:focus, .card select:focus {
+    border-color: #1e40af;
+    outline: none;
+    box-shadow: 0 0 5px rgba(30,64,175,0.3);
+}
+
+.card button {
+    padding: 10px 20px;
+    background: #1e40af;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.card button:hover {
+    background: #2563eb;
+}
+
+/* ===== TABLE ===== */
+.table-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    text-align: left;
+    background: #f1f5f9;
+}
+
+th, td {
+    padding: 15px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+tbody tr:hover {
+    background: #e0e7ff;
+}
+
+/* ===== BUTTONS EN TABLA ===== */
+button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    margin-right: 5px;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+button:nth-child(1) {
+    background: #2563eb;
+    color: white;
+}
+
+button:nth-child(2) {
+    background: #ef4444;
+    color: white;
+}
+
+/* ===== STATS ===== */
+.stats {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+.stats .stat {
+    flex: 1;
+}
+
+.stats .bar {
+    height: 10px;
+    border-radius: 8px;
+    margin-top: 5px;
+    background: #dbeafe;
+}
+
+.bg-presentes {
+    background: #3b82f6;
+    width: 0%;
+    transition: 0.5s;
+}
+
+.bg-ausentes {
+    background: #ef4444;
+    width: 0%;
+    transition: 0.5s;
+}
