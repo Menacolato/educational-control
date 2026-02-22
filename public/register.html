@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Crear Cuenta - Bachillerato</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f6f9;
+}
+
+.container {
+    max-width: 420px;
+    margin: auto;
+    padding: 20px;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    color: gray;
+    margin-bottom: 25px;
+}
+
+.role-switch {
+    display: flex;
+    background: #eef1f6;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.role-switch button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.role-switch button.active {
+    background: #2563eb;
+    color: white;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+.section-box {
+    background: #f0f4ff;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 15px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.primary-btn:hover {
+    background: #1e4ed8;
+}
+
+.link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.link a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+
+        <h2>Únete al Bachillerato</h2>
+        <div class="subtitle">Gestiona tu vida académica desde un solo lugar</div>
+
+
+        <div class="role-switch">
+            <button id="btnEst" class="active" onclick="setRol('estudiante')">Estudiante</button>
+            <button id="btnDoc" onclick="setRol('docente')">Docente</button>
+            <button id="btnAdmin" onclick="setRol('admin')">Admin</button>
+    </div>
+        <input type="text" id="nombre" placeholder="Nombre completo">
+        <input type="email" id="correo" placeholder="Correo institucional">
+        <input type="password" id="password" placeholder="Contraseña">
+
+        <div id="extra"></div>
+
+        <button class="primary-btn" onclick="registrar()">Crear cuenta</button>
+
+        <div class="link">
+            ¿Ya tienes cuenta? <a href="login.html">Iniciar sesión</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+let rolSeleccionado = "estudiante";
+
+function setRol(rol) {
+    rolSeleccionado = rol;
+
+    document.getElementById("btnEst").classList.remove("active");
+    document.getElementById("btnDoc").classList.remove("active");
+
+    if (rol === "estudiante") {
+        document.getElementById("btnEst").classList.add("active");
+    } else {
+        document.getElementById("btnDoc").classList.add("active");
+    }
+
+    mostrarCampos();
+}
+
+function mostrarCampos() {
+
+    const extra = document.getElementById("extra");
+
+    if (rolSeleccionado === "estudiante") {
+
+        extra.innerHTML = `
+            <div class="section-box">
+                <select id="grado">
+                    <option value="">Seleccione grado</option>
+                    <option value="1">1°</option>
+                    <option value="2">2°</option>
+                    <option value="3">3°</option>
+                </select>
+
+                <input type="text" id="seccion" placeholder="Sección (A, B...)">
+
+                <select id="turno">
+                    <option value="">Turno</option>
+                    <option value="Matutino">Matutino</option>
+                    <option value="Vespertino">Vespertino</option>
+                </select>
+            </div>
+        `;
+
+    } else if (rolSeleccionado === "docente") {
+
+        extra.innerHTML = `
+            <div class="section-box">
+                <input type="text" id="materia_principal" placeholder="Materia principal">
+                <input type="text" id="telefono" placeholder="Teléfono">
+            </div>
+        `;
+
+    } else if (rolSeleccionado === "admin") {
+
+        extra.innerHTML = `
+            <div class="section-box">
+                <input type="password" id="codigo_admin" placeholder="Código secreto de administrador">
+            </div>
+        `;
+    }
+}
+mostrarCampos();
+
+function registrar() {
+
+    fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+    nombre: document.getElementById("nombre").value,
+    correo: document.getElementById("correo").value,
+    password: document.getElementById("password").value,
+    rol: rolSeleccionado,
+    grado: document.getElementById("grado")?.value,
+    seccion: document.getElementById("seccion")?.value,
+    turno: document.getElementById("turno")?.value,
+    materia_principal: document.getElementById("materia_principal")?.value,
+    telefono: document.getElementById("telefono")?.value,
+    codigo_admin: document.getElementById("codigo_admin")?.value
+})
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message || data.error));
+}
+
+</script>
+
+</body>
+</html>
