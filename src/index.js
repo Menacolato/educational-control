@@ -95,13 +95,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
-app.get("/", (req, res) => res.send("Educational Control API running 🚀"));
-
-app.get("/api/ping", async (req, res) => {
-  const [rows] = await db.query("SELECT 1 as ok");
-  res.json({ ok: true, db: rows[0].ok });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
