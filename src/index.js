@@ -95,3 +95,15 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+const db = require("./db");
+
+app.get("/api/db-test", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT 1 as ok");
+    res.json({ ok: true, rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
