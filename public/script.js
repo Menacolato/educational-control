@@ -3,32 +3,32 @@ const tabla = document.getElementById("tablaEstudiantes");
 const presentesSpan = document.getElementById("presentes");
 const ausentesSpan = document.getElementById("ausentes");
 
-// Variable para almacenar el ID cuando estamos editando
 let editId = null;
 
-// Evento submit (Agregar o Editar)
+// ==============================
+// SUBMIT (CREAR O EDITAR)
+// ==============================
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const data = {
-        nombre: nombre.value,
-        apellido: apellido.value,
-        edad: edad.value,
-        grado: grado.value,
-        correo: correo.value
+        nombre: document.getElementById("nombre").value,
+        apellido: document.getElementById("apellido").value,
+        edad: document.getElementById("edad").value,
+        grado: document.getElementById("grado").value,
+        correo: document.getElementById("correo").value
     };
 
-    if(editId) {
-        // EDITAR estudiante completo
+    if (editId) {
         await fetch(`http://localhost:3000/api/estudiantes/${editId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
         });
+
         editId = null;
         form.querySelector("button").textContent = "Registrar";
     } else {
-        // AGREGAR nuevo estudiante
         await fetch("http://localhost:3000/api/estudiantes", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -40,7 +40,9 @@ form.addEventListener("submit", async (e) => {
     cargarEstudiantes();
 });
 
-// Cargar estudiantes en la tabla
+// ==============================
+// CARGAR ESTUDIANTES
+// ==============================
 async function cargarEstudiantes() {
     const res = await fetch("http://localhost:3000/api/estudiantes");
     const estudiantes = await res.json();
@@ -69,41 +71,51 @@ async function cargarEstudiantes() {
     actualizarResumen(estudiantes);
 }
 
-// Actualiza asistencia
+// ==============================
+// ACTUALIZAR ASISTENCIA (PATCH)
+// ==============================
 async function actualizarAsistencia(id, valor) {
-    await fetch(`http://localhost:3000/api/estudiantes/${id}`, {
-        method: "PUT",
+    await fetch(`http://localhost:3000/api/estudiantes/${id}/asistencia`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ asistencia: valor })
     });
+
     cargarEstudiantes();
 }
 
-// Eliminar estudiante
+// ==============================
+// ELIMINAR
+// ==============================
 async function eliminar(id) {
     await fetch(`http://localhost:3000/api/estudiantes/${id}`, {
         method: "DELETE"
     });
+
     cargarEstudiantes();
 }
 
-// Función para editar estudiante
+// ==============================
+// EDITAR
+// ==============================
 async function editar(id) {
-    const res = await fetch(`http://localhost:3000/api/estudiantes`);
+    const res = await fetch("http://localhost:3000/api/estudiantes");
     const estudiantes = await res.json();
     const est = estudiantes.find(e => e.id === id);
 
-    nombre.value = est.nombre;
-    apellido.value = est.apellido;
-    edad.value = est.edad;
-    grado.value = est.grado;
-    correo.value = est.correo;
+    document.getElementById("nombre").value = est.nombre;
+    document.getElementById("apellido").value = est.apellido;
+    document.getElementById("edad").value = est.edad;
+    document.getElementById("grado").value = est.grado;
+    document.getElementById("correo").value = est.correo;
 
     editId = id;
     form.querySelector("button").textContent = "Actualizar";
 }
 
-// Actualizar resumen y barras
+// ==============================
+// ACTUALIZAR RESUMEN
+// ==============================
 function actualizarResumen(estudiantes) {
     const presentes = estudiantes.filter(e => e.asistencia).length;
     const ausentes = estudiantes.length - presentes;
@@ -112,9 +124,15 @@ function actualizarResumen(estudiantes) {
     ausentesSpan.textContent = ausentes;
 
     const total = estudiantes.length || 1;
-    document.querySelector(".bg-presentes").style.width = `${(presentes/total)*100}%`;
-    document.querySelector(".bg-ausentes").style.width = `${(ausentes/total)*100}%`;
+
+    document.querySelector(".bg-presentes").style.width =
+        `${(presentes / total) * 100}%`;
+
+    document.querySelector(".bg-ausentes").style.width =
+        `${(ausentes / total) * 100}%`;
 }
 
-// Inicializar tabla al cargar página
+// ==============================
+// INICIAR
+// ==============================
 cargarEstudiantes();
