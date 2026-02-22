@@ -3,10 +3,6 @@ const router = express.Router();
 const db = require("../db");
 const bcrypt = require("bcrypt");
 
-
-// ============================
-// REGISTRO
-// ============================
 router.post("/register", async (req, res) => {
 
     const {
@@ -22,47 +18,45 @@ router.post("/register", async (req, res) => {
         codigo_admin
     } = req.body;
 
-    if (!nombre || !correo || !password || !rol) {
-        return res.status(400).json({ error: "Campos obligatorios faltantes" });
-    }
-
-    // 🔐 Si intenta crear admin
     if (rol === "admin") {
-        if (codigo_admin !== "ADMIN2026") {
-            return res.status(403).json({ error: "Código de administrador incorrecto" });
+        if (codigo_admin !== "123456") {
+            return res.status(400).json({ message: "Código admin incorrecto" });
         }
     }
 
-    if (password.length < 6) {
-        return res.status(400).json({ error: "La contraseña debe tener mínimo 6 caracteres" });
-    }
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+        db.query(
+            `INSERT INTO usuarios 
+            (nombre, correo, password, rol, grado, seccion, turno, materia_principal, telefono)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                nombre,
+                correo,
+                hashedPassword,
+                rol,
+                rol === "estudiante" ? grado : null,
+                rol === "estudiante" ? seccion : null,
+                rol === "estudiante" ? turno : null,
+                rol === "docente" ? materia_principal : null,
+                rol === "docente" ? telefono : null
+            ],
+            (err) => {
 
-    db.query(
-        `INSERT INTO usuarios
-        (nombre, correo, password, rol, grado, seccion, turno, materia_principal, telefono)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-            nombre,
-            correo,
-            hashedPassword,
-            rol,
-            grado || null,
-            seccion || null,
-            turno || null,
-            materia_principal || null,
-            telefono || null
-        ],
-        (err) => {
-            if (err) {
-                return res.status(500).json({ error: "El correo ya existe" });
+                if (err) {
+                    console.log(err);
+                    return res.status(500).json({ message: "Error al registrar" });
+                }
+
+                res.json({ message: "Usuario registrado correctamente" });
             }
-            res.json({ message: "Usuario creado correctamente" });
-        }
-    );
-});
+        );
 
+    } catch (error) {
+        res.status(500).json({ message: "Error al encriptar contraseña" });
+    }
+});
 // ============================
 // LOGIN
 // ============================

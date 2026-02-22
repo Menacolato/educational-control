@@ -95,11 +95,10 @@ button:hover{
         ¿No tienes cuenta? <a href="register.html">Crear cuenta</a>
     </div>
 </div>
-
 <script>
 function iniciarSesion() {
 
-    fetch("http://localhost:3000/api/login", {
+    fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -110,7 +109,7 @@ function iniciarSesion() {
     .then(res => res.json())
     .then(data => {
 
-        if (data.message === "Login correcto") {
+        if (data.rol) {   // 🔥 Si viene rol, login correcto
 
             if (data.rol === "estudiante")
                 window.location.href = "estudiante/dashboard.html";
@@ -122,12 +121,12 @@ function iniciarSesion() {
                 window.location.href = "admin/dashboard.html";
 
         } else {
-            alert(data.message);
+            alert(data.error || data.message || "Error al iniciar sesión");
         }
+
     })
     .catch(() => alert("Error al conectar con el servidor"));
 }
 </script>
-
 </body>
 </html>

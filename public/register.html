@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
@@ -65,12 +64,6 @@ input, select {
     margin-bottom: 15px;
     border-radius: 12px;
     border: 1px solid #ddd;
-    font-size: 14px;
-}
-
-input:focus, select:focus {
-    outline: none;
-    border-color: #2563eb;
 }
 
 .section-box {
@@ -90,7 +83,6 @@ input:focus, select:focus {
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.3s;
 }
 
 .primary-btn:hover {
@@ -107,36 +99,36 @@ input:focus, select:focus {
     text-decoration: none;
     font-weight: bold;
 }
-
 </style>
 </head>
+
 <body>
 
 <div class="container">
-    <div class="card">
+<div class="card">
 
-        <h2>Únete al Bachillerato</h2>
-        <div class="subtitle">Gestiona tu vida académica desde un solo lugar</div>
+<h2>Únete al Bachillerato</h2>
+<div class="subtitle">Gestiona tu vida académica desde un solo lugar</div>
 
+<div class="role-switch">
+    <button id="btnEst" class="active" onclick="setRol('estudiante')">Estudiante</button>
+    <button id="btnDoc" onclick="setRol('docente')">Docente</button>
+    <button id="btnAdmin" onclick="setRol('admin')">Admin</button>
+</div>
 
-        <div class="role-switch">
-            <button id="btnEst" class="active" onclick="setRol('estudiante')">Estudiante</button>
-            <button id="btnDoc" onclick="setRol('docente')">Docente</button>
-            <button id="btnAdmin" onclick="setRol('admin')">Admin</button>
-    </div>
-        <input type="text" id="nombre" placeholder="Nombre completo">
-        <input type="email" id="correo" placeholder="Correo institucional">
-        <input type="password" id="password" placeholder="Contraseña">
+<input type="text" id="nombre" placeholder="Nombre completo">
+<input type="email" id="correo" placeholder="Correo institucional">
+<input type="password" id="password" placeholder="Contraseña">
 
-        <div id="extra"></div>
+<div id="extra"></div>
 
-        <button class="primary-btn" onclick="registrar()">Crear cuenta</button>
+<button type="button" class="primary-btn" onclick="registrar()">Crear cuenta</button>
 
-        <div class="link">
-            ¿Ya tienes cuenta? <a href="login.html">Iniciar sesión</a>
-        </div>
+<div class="link">
+    ¿Ya tienes cuenta? <a href="login.html">Iniciar sesión</a>
+</div>
 
-    </div>
+</div>
 </div>
 
 <script>
@@ -148,81 +140,84 @@ function setRol(rol) {
 
     document.getElementById("btnEst").classList.remove("active");
     document.getElementById("btnDoc").classList.remove("active");
+    document.getElementById("btnAdmin").classList.remove("active");
 
-    if (rol === "estudiante") {
-        document.getElementById("btnEst").classList.add("active");
-    } else {
-        document.getElementById("btnDoc").classList.add("active");
-    }
+    if (rol === "estudiante") document.getElementById("btnEst").classList.add("active");
+    if (rol === "docente") document.getElementById("btnDoc").classList.add("active");
+    if (rol === "admin") document.getElementById("btnAdmin").classList.add("active");
 
     mostrarCampos();
 }
 
 function mostrarCampos() {
-
     const extra = document.getElementById("extra");
 
     if (rolSeleccionado === "estudiante") {
-
         extra.innerHTML = `
-            <div class="section-box">
-                <select id="grado">
-                    <option value="">Seleccione grado</option>
-                    <option value="1">1°</option>
-                    <option value="2">2°</option>
-                    <option value="3">3°</option>
-                </select>
+        <div class="section-box">
+            <select id="grado">
+                <option value="">Seleccione grado</option>
+                <option value="1">1°</option>
+                <option value="2">2°</option>
+                <option value="3">3°</option>
+            </select>
+            <input type="text" id="seccion" placeholder="Sección (A, B...)">
+            <select id="turno">
+                <option value="">Turno</option>
+                <option value="Matutino">Matutino</option>
+                <option value="Vespertino">Vespertino</option>
+            </select>
+        </div>`;
+    }
 
-                <input type="text" id="seccion" placeholder="Sección (A, B...)">
-
-                <select id="turno">
-                    <option value="">Turno</option>
-                    <option value="Matutino">Matutino</option>
-                    <option value="Vespertino">Vespertino</option>
-                </select>
-            </div>
-        `;
-
-    } else if (rolSeleccionado === "docente") {
-
+    if (rolSeleccionado === "docente") {
         extra.innerHTML = `
-            <div class="section-box">
-                <input type="text" id="materia_principal" placeholder="Materia principal">
-                <input type="text" id="telefono" placeholder="Teléfono">
-            </div>
-        `;
+        <div class="section-box">
+            <input type="text" id="materia_principal" placeholder="Materia principal">
+            <input type="text" id="telefono" placeholder="Teléfono">
+        </div>`;
+    }
 
-    } else if (rolSeleccionado === "admin") {
-
+    if (rolSeleccionado === "admin") {
         extra.innerHTML = `
-            <div class="section-box">
-                <input type="password" id="codigo_admin" placeholder="Código secreto de administrador">
-            </div>
-        `;
+        <div class="section-box">
+            <input type="password" id="codigo_admin" placeholder="Código secreto de administrador">
+        </div>`;
     }
 }
+
 mostrarCampos();
 
 function registrar() {
+    
 
-    fetch("/api/register", {
+    fetch("http://localhost:3000/api/auth/register",  {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-    nombre: document.getElementById("nombre").value,
-    correo: document.getElementById("correo").value,
-    password: document.getElementById("password").value,
-    rol: rolSeleccionado,
-    grado: document.getElementById("grado")?.value,
-    seccion: document.getElementById("seccion")?.value,
-    turno: document.getElementById("turno")?.value,
-    materia_principal: document.getElementById("materia_principal")?.value,
-    telefono: document.getElementById("telefono")?.value,
-    codigo_admin: document.getElementById("codigo_admin")?.value
-})
+            nombre: document.getElementById("nombre").value,
+            correo: document.getElementById("correo").value,
+            password: document.getElementById("password").value,
+            rol: rolSeleccionado,
+            grado: document.getElementById("grado")?.value,
+            seccion: document.getElementById("seccion")?.value,
+            turno: document.getElementById("turno")?.value,
+            materia_principal: document.getElementById("materia_principal")?.value,
+            telefono: document.getElementById("telefono")?.value,
+            codigo_admin: document.getElementById("codigo_admin")?.value
+        })
     })
     .then(res => res.json())
-    .then(data => alert(data.message || data.error));
+    .then(data => {
+        alert(data.message);
+        if (data.message === "Usuario registrado correctamente") {
+            window.location.href = "login.html";
+        }
+    })
+    .catch(error => {
+        console.log(error);
+        alert("Error al conectar con el servidor");
+    });
 }
 
 </script>

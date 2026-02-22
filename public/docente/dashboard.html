@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Docente</title>
+</head>
+<body>
+
+<h2>Panel Docente</h2>
+
+<h3>Mis Materias</h3>
+
+<table border="1">
+<thead>
+<tr>
+<th>Materia</th>
+<th>Grado</th>
+<th>Sección</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+
+<script>
+
+fetch("/api/docente/mis-materias")
+.then(res => res.json())
+.then(data => {
+
+    const tabla = document.getElementById("tabla");
+
+    data.forEach(m => {
+        tabla.innerHTML += `
+        <tr>
+            <td>${m.nombre}</td>
+            <td>${m.grado}</td>
+            <td>${m.seccion}</td>
+            <td>
+                <button onclick="verEstudiantes(${m.id})">
+                Ver Estudiantes
+                </button>
+            </td>
+        </tr>
+        `;
+    });
+
+});
+
+function verEstudiantes(id) {
+    window.location.href = "estudiantes.html?id=" + id;
+}
+
+</script>
+
+</body>
+</html>
