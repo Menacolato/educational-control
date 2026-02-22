@@ -33,7 +33,7 @@ router.get("/", (req, res) => {
 
 
 // ==============================
-// UPDATE COMPLETO (Formulario)
+// UPDATE COMPLETO
 // ==============================
 router.put("/:id", (req, res) => {
     const { nombre, apellido, edad, grado, correo } = req.body;
@@ -52,7 +52,23 @@ router.put("/:id", (req, res) => {
 
 
 // ==============================
-// PATCH SOLO ASISTENCIA 🔥
+// 🔥 MARCAR / DESMARCAR TODOS
+// (VA ANTES del :id/asistencia)
+// ==============================
+router.patch("/asistencia/todos", (req, res) => {
+    const { asistencia } = req.body;
+
+    const sql = "UPDATE estudiante SET asistencia=?";
+
+    db.query(sql, [asistencia ? 1 : 0], (err) => {
+        if (err) return res.status(500).json(err);
+        res.json({ message: "Asistencia actualizada para todos" });
+    });
+});
+
+
+// ==============================
+// PATCH SOLO ASISTENCIA
 // ==============================
 router.patch("/:id/asistencia", (req, res) => {
     const { asistencia } = req.body;

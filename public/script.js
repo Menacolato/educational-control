@@ -25,7 +25,6 @@ form.addEventListener("submit", async (e) => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
         });
-
         editId = null;
         form.querySelector("button").textContent = "Registrar";
     } else {
@@ -72,7 +71,7 @@ async function cargarEstudiantes() {
 }
 
 // ==============================
-// ACTUALIZAR ASISTENCIA (PATCH)
+// ACTUALIZAR ASISTENCIA
 // ==============================
 async function actualizarAsistencia(id, valor) {
     await fetch(`http://localhost:3000/api/estudiantes/${id}/asistencia`, {
@@ -80,18 +79,6 @@ async function actualizarAsistencia(id, valor) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ asistencia: valor })
     });
-
-    cargarEstudiantes();
-}
-
-// ==============================
-// ELIMINAR
-// ==============================
-async function eliminar(id) {
-    await fetch(`http://localhost:3000/api/estudiantes/${id}`, {
-        method: "DELETE"
-    });
-
     cargarEstudiantes();
 }
 
@@ -111,6 +98,50 @@ async function editar(id) {
 
     editId = id;
     form.querySelector("button").textContent = "Actualizar";
+}
+
+// ==============================
+// ELIMINAR
+// ==============================
+async function eliminar(id) {
+    await fetch(`http://localhost:3000/api/estudiantes/${id}`, {
+        method: "DELETE"
+    });
+    cargarEstudiantes();
+}
+
+// ==============================
+// MARCAR / DESMARCAR TODOS
+// ==============================
+async function marcarTodos(valor) {
+    await fetch("http://localhost:3000/api/estudiantes/asistencia/todos", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ asistencia: valor })
+    });
+    cargarEstudiantes();
+}
+
+// ==============================
+// DESCARGAR EXCEL
+// ==============================
+async function descargarExcel() {
+    const res = await fetch("http://localhost:3000/api/estudiantes");
+    const estudiantes = await res.json();
+
+    const datos = estudiantes.map(est => ({
+        Nombre: est.nombre + " " + est.apellido,
+        Edad: est.edad,
+        Grado: est.grado,
+        Correo: est.correo || "",
+        Asistencia: est.asistencia ? "Presente" : "Ausente"
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(datos);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Asistencia");
+
+    XLSX.writeFile(workbook, "lista_asistencia.xlsx");
 }
 
 // ==============================
