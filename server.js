@@ -7,21 +7,31 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(session({
-    secret: "secreto123",
-    resave: false,
-    saveUninitialized: true
-}));
+app.set("trust proxy", 1); // recomendado en Cloud Run
 
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "secreto123",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: false, // si luego pones HTTPS + proxy, se puede ajustar
+    },
+  })
+);
+
+// ✅ Sirve los HTML/CSS/JS
 app.use(express.static(path.join(__dirname, "public")));
 
+// ✅ APIs
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/docente", require("./routes/docente"));
-app.use("/api/estudiantes", require("./routes/estudiantes"));
 
-const PORT = process.env.PORT || 3000;
+// 👇 separación correcta
+app.use("/api/estudiante", require("./routes/estudiante"));   // dashboard/materias/notas
+app.use("/api/estudiantes", require("./routes/estudiantes")); // CRUD para el HTML
 
-app.listen(PORT, () => {
-  console.log(`Servidor en puerto ${PORT}`);
-});
+// ✅ Cloud Run usa PORT (8080 normalmente)
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));

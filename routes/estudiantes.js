@@ -1,87 +1,133 @@
 const express = require("express");
-
-// ✅ Usa el pool (mysql2/promise) desde src/config/db.js
-// Ajusta esta ruta si tu archivo db está en otro lugar.
 const db = require("../src/config/db");
-
 const router = express.Router();
 
-// 🔐 Middleware para estudiante
-function verificarEstudiante(req, res, next) {
-  if (!req.session || !req.session.usuario) {
-    return res.status(401).json({ message: "No autenticado" });
-  }
-
-  if (req.session.usuario.rol !== "estudiante") {
-    return res.status(403).json({ message: "No autorizado" });
-  }
-
-  next();
-}
-
 // ==========================
-// 📊 DASHBOARD
+// ✅ LISTAR estudiantes
+// GET /api/estudiantes
 // ==========================
-router.get("/dashboard", verificarEstudiante, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const estudiante_id = req.session.usuario.id;
-
     const [rows] = await db.query(
-      "SELECT nombre, grado, seccion, turno FROM usuarios WHERE id = ?",
-      [estudiante_id]
+      `SELECT id, nombre, apellido, edad, grado, correo, asistencia
+       FROM usuarios
+       WHERE rol = 'estudiante'
+       ORDER BY id DESC`
     );
-
-    res.json(rows[0] || null);
+    res.json(rows);
   } catch (err) {
-    console.error("Error /dashboard:", err);
-    res.status(500).json({ message: "Error en el servidor" });
+    console.error("GET /api/estudiantes error:", err);
+    res.status(500).json({ message: "Error al listar estudiantes" });
   }
 });
 
 // ==========================
-// 📚 MIS MATERIAS
+// ✅ CREAR estudiante
+// POST /api/estudiantes
 // ==========================
-router.get("/mis-materias", verificarEstudiante, async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const estudiante_id = req.session.usuario.id;
+    const { nombre, apellido, edad, grado, correo } = req.body;
 
-    const [rows] = await db.query(
-      `SELECT m.nombre
-       FROM usuarios u
-       JOIN docente_materias dm
-         ON u.grado = dm.grado AND u.seccion = dm.seccion
-       JOIN materias m
-         ON dm.materia_id = m.id
-       WHERE u.id = ?`,
-      [estudiante_id]
+    const [result] = await db.query(
+      `INSERT INTO usuarios (nombre, apellido, edad, grado, correo, rol, asistencia)
+       VALUES (?, ?, ?, ?, ?, 'estudiante', 0)`,
+      [nombre, apellido, edad, grado, correo]
     );
 
-    res.json(rows);
+    res.status(201).json({ id: result.insertId });
   } catch (err) {
-    console.error("Error /mis-materias:", err);
-    res.status(500).json({ message: "Error en el servidor" });
+    console.error("POST /api/estudiantes error:", err);
+    res.status(500).json({ message: "Error al crear estudiante" });
   }
 });
 
 // ==========================
-// 📝 MIS NOTAS
+// ✅ EDITAR estudiante
+// PUT /api/estudiantes/:id
 // ==========================
-router.get("/mis-notas", verificarEstudiante, async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
-    const estudiante_id = req.session.usuario.id;
+    const { id } = req.params;
+    const { nombre, apellido, edad, grado, correo } = req.body;
 
-    const [rows] = await db.query(
-      `SELECT t.titulo, nt.nota, t.valor
-       FROM notas_tareas nt
-       JOIN tareas t ON nt.tarea_id = t.id
-       WHERE nt.estudiante_id = ?`,
-      [estudiante_id]
+    await db.query(
+      `UPDATE usuarios
+       SET nombre=?, apellido=?, edad=?, grado=?, correo=?
+       WHERE id=? AND rol='estudiante'`,
+      [nombre, apellido, edad, grado, correo, id]
     );
 
-    res.json(rows);
+    res.json({ message: "Actualizado" });
   } catch (err) {
-    console.error("Error /mis-notas:", err);
-    res.status(500).json({ message: "Error en el servidor" });
+    console.error("PUT /api/estudiantes/:id error:", err);
+    res.status(500).json({ message: "Error al actualizar estudiante" });
+  }
+});
+
+// ==========================
+// ✅ ELIMINAR estudiante
+// DELETE /api/estudiantes/:id
+// ==========================
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await db.query(
+      `DELETE FROM usuarios
+       WHERE id=? AND rol='estudiante'`,
+      [id]
+    );
+
+    res.json({ message: "Eliminado" });
+  } catch (err) {
+    console.error("DELETE /api/estudiantes/:id error:", err);
+    res.status(500).json({ message: "Error al eliminar estudiante" });
+  }
+});
+
+// ==========================
+// ✅ TOGGLE asistencia
+// PATCH /api/estudiantes/:id/asistencia
+// ==========================
+router.patch("/:id/asistencia", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { asistencia } = req.body;
+
+    await db.query(
+      `UPDATE usuarios
+       SET asistencia = ?
+       WHERE id=? AND rol='estudiante'`,
+      [asistencia ? 1 : 0, id]
+    );
+
+    res.json({ message: "Asistencia actualizada" });
+  } catch (err) {
+    console.error("PATCH /api/estudiantes/:id/asistencia error:", err);
+    res.status(500).json({ message: "Error al actualizar asistencia" });
+  }
+});
+
+// ==========================
+// ✅ MARCAR/DESMARCAR TODOS
+// PATCH /api/estudiantes/asistencia/todos
+// ==========================
+router.patch("/asistencia/todos", async (req, res) => {
+  try {
+    const { asistencia } = req.body;
+
+    await db.query(
+      `UPDATE usuarios
+       SET asistencia = ?
+       WHERE rol='estudiante'`,
+      [asistencia ? 1 : 0]
+    );
+
+    res.json({ message: "Asistencia masiva actualizada" });
+  } catch (err) {
+    console.error("PATCH /api/estudiantes/asistencia/todos error:", err);
+    res.status(500).json({ message: "Error en asistencia masiva" });
   }
 });
 
