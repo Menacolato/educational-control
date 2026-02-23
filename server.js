@@ -29,7 +29,7 @@ app.use("/api/admin", require("./routes/admin"));
 app.use("/api/docente", require("./routes/docente"));
 
 // 👇 separación correcta
-app.use("/api/estudiante", require("./routes/estudiante"));   // dashboard/materias/notas
+app.use("/api/estudiantes", require("./routes/estudiantes.crud")); // CRUD para el API
 app.use("/api/estudiantes", require("./routes/estudiantes")); // CRUD para el HTML
 
 const PORT = process.env.PORT || 8080;
