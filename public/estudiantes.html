@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educacional Control</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Educacional Control</h2>
+    <ul>
+        <li>Inicio</li>
+        <li><strong>Profesores</strong></li>
+        <li>Estudiantes</li>
+        <li>Notas</li>
+    </ul>
+</div>
+
+<div class="main">
+
+    <div class="header">
+        <h1>Registro de Asistencia</h1>
+    </div>
+
+    <div class="card">
+        <form id="formEstudiante">
+            <input type="text" id="nombre" placeholder="Nombres" required>
+            <input type="text" id="apellido" placeholder="Apellidos" required>
+            <input type="number" id="edad" placeholder="Edad" required>
+
+            <select id="grado" required>
+                <option value="" disabled selected>Selecciona un grado</option>
+                <option value="1° Primaria">1° Primero</option>
+                <option value="2° Primaria">2° Segundo</option>
+                <option value="3° Primaria">3° Tercero</option>
+                <option value="4° Primaria">4° Cuarto</option>
+                <option value="5° Primaria">5° Quinto</option>
+                <option value="6° Primaria">6° Sexto</option>
+                <option value="7° Primaria">7° Septimo</option>
+                <option value="8° Primaria">8° Octavo</option>
+                <option value="9° Primaria">9° Noveno</option>
+                <option value="10° Primaria">10° Primer año de Bachillerato</option>
+                <option value="11° Primaria">11° Segundo año de Bachillerato</option>
+            </select>
+
+            <input type="email" id="correo" placeholder="Correo">
+            <button type="submit">Registrar</button>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Edad</th>
+                    <th>Grado</th>
+                    <th>Correo</th>
+                    <th>Asistencia</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaEstudiantes"></tbody>
+        </table>
+
+        <div class="stats">
+            <div class="stat">
+                <div>Presentes: <span id="presentes">0</span></div>
+                <div class="bar bg-presentes"></div>
+            </div>
+            <div class="stat">
+                <div>Ausentes: <span id="ausentes">0</span></div>
+                <div class="bar bg-ausentes"></div>
+            </div>
+        </div>
+        
+    </div>
+    <br>
+<div class="acciones-tabla">
+    <button onclick="marcarTodos(true)">Marcar todos</button>
+    <button onclick="marcarTodos(false)">Desmarcar todos</button>
+    <button onclick="descargarExcel()">Descargar Excel</button>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
