@@ -7,7 +7,7 @@ let editId = null;
 
 // ✅ Base URL relativa (funciona en Cloud Run y local)
 // Si quieres correr local, también funciona si sirves frontend+api desde el mismo Express.
-const API_BASE = "/api/estudiante";
+const API_BASE = "/api/estudiantes";
 
 // Helper para fetch con manejo básico de errores
 async function apiFetch(url, options = {}) {
