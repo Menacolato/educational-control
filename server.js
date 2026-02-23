@@ -28,9 +28,13 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/docente", require("./routes/docente"));
 
-// 👇 separación correcta
-app.use("/api/estudiantes", require("./routes/estudiantes.crud")); // CRUD para el API
-app.use("/api/estudiantes", require("./routes/estudiantes")); // CRUD para el HTML
+if (process.env.PREVIEW_MODE === "true") {
+  app.use("/api/estudiantes", require("./routes/estudiantes.preview"));
+  console.log("✅ PREVIEW_MODE activo: CRUD estudiantes en memoria");
+} else {
+  app.use("/api/estudiantes", require("./routes/estudiantes"));
+  console.log("✅ Modo normal: CRUD estudiantes con BD");
+}
 
 const PORT = process.env.PORT || 8080;
 
