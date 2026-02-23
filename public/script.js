@@ -5,136 +5,218 @@ const ausentesSpan = document.getElementById("ausentes");
 
 let editId = null;
 
+// ✅ Base URL relativa (funciona en Cloud Run y local)
+// Si quieres correr local, también funciona si sirves frontend+api desde el mismo Express.
+const API_BASE = "/api/estudiante";
+
+// Helper para fetch con manejo básico de errores
+async function apiFetch(url, options = {}) {
+  const res = await fetch(url, options);
+
+  // Si el backend devuelve HTML de error o JSON distinto, igual intentamos leer algo útil
+  const contentType = res.headers.get("content-type") || "";
+  let payload = null;
+
+  try {
+    if (contentType.includes("application/json")) {
+      payload = await res.json();
+    } else {
+      payload = await res.text();
+    }
+  } catch (e) {
+    payload = null;
+  }
+
+  if (!res.ok) {
+    console.error("API Error:", res.status, url, payload);
+    throw new Error(`API error ${res.status} en ${url}`);
+  }
+
+  return payload;
+}
+
 // ==============================
 // SUBMIT (CREAR O EDITAR)
 // ==============================
 form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const data = {
-        nombre: document.getElementById("nombre").value,
-        apellido: document.getElementById("apellido").value,
-        edad: document.getElementById("edad").value,
-        grado: document.getElementById("grado").value,
-        correo: document.getElementById("correo").value
-    };
+  const data = {
+    nombre: document.getElementById("nombre").value.trim(),
+    apellido: document.getElementById("apellido").value.trim(),
+    edad: document.getElementById("edad").value,
+    grado: document.getElementById("grado").value,
+    correo: document.getElementById("correo").value.trim()
+  };
 
+  try {
     if (editId) {
-        await fetch(`http://localhost:3000/api/estudiantes/${editId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
-        editId = null;
-        form.querySelector("button").textContent = "Registrar";
+      await apiFetch(`${API_BASE}/${editId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      editId = null;
+      form.querySelector("button").textContent = "Registrar";
     } else {
-        await fetch("http://localhost:3000/api/estudiantes", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
+      await apiFetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
     }
 
     form.reset();
-    cargarEstudiantes();
+    await cargarEstudiantes();
+  } catch (err) {
+    alert("No se pudo guardar el estudiante. Revisa la consola (F12) y los logs en Cloud Run.");
+  }
 });
 
 // ==============================
 // CARGAR ESTUDIANTES
 // ==============================
 async function cargarEstudiantes() {
-    const res = await fetch("http://localhost:3000/api/estudiantes");
-    const estudiantes = await res.json();
+  try {
+    const estudiantes = await apiFetch(API_BASE); // ✅ GET /api/estudiante
+
+    // Si por alguna razón el backend no devuelve array, evita el crash
+    if (!Array.isArray(estudiantes)) {
+      console.error("Respuesta no es un array:", estudiantes);
+      tabla.innerHTML = "";
+      actualizarResumen([]);
+      return;
+    }
 
     tabla.innerHTML = "";
 
-    estudiantes.forEach(est => {
-        tabla.innerHTML += `
+    estudiantes.forEach((est) => {
+      tabla.innerHTML += `
         <tr>
-            <td>${est.nombre} ${est.apellido}</td>
-            <td>${est.edad}</td>
-            <td>${est.grado}</td>
-            <td>${est.correo || ""}</td>
-            <td>
-                <input type="checkbox" ${est.asistencia ? "checked" : ""}
-                onchange="actualizarAsistencia(${est.id}, this.checked)">
-            </td>
-            <td>
-                <button onclick="editar(${est.id})">Editar</button>
-                <button onclick="eliminar(${est.id})">Eliminar</button>
-            </td>
+          <td>${est.nombre ?? ""} ${est.apellido ?? ""}</td>
+          <td>${est.edad ?? ""}</td>
+          <td>${est.grado ?? ""}</td>
+          <td>${est.correo ?? ""}</td>
+          <td>
+            <input type="checkbox" ${est.asistencia ? "checked" : ""}
+              onchange="actualizarAsistencia(${est.id}, this.checked)">
+          </td>
+          <td>
+            <button onclick="editar(${est.id})">Editar</button>
+            <button onclick="eliminarEstudiante(${est.id})">Eliminar</button>
+          </td>
         </tr>
-        `;
+      `;
     });
 
     actualizarResumen(estudiantes);
+  } catch (err) {
+    console.error(err);
+    // Para no dejar la tabla “rota”
+    tabla.innerHTML = "";
+    actualizarResumen([]);
+  }
 }
 
 // ==============================
 // ACTUALIZAR ASISTENCIA
 // ==============================
 async function actualizarAsistencia(id, valor) {
-    await fetch(`http://localhost:3000/api/estudiantes/${id}/asistencia`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ asistencia: valor })
+  try {
+    await apiFetch(`${API_BASE}/${id}/asistencia`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ asistencia: valor })
     });
-    cargarEstudiantes();
+    await cargarEstudiantes();
+  } catch (err) {
+    alert("No se pudo actualizar asistencia. Revisa consola/logs.");
+  }
 }
 
 // ==============================
 // EDITAR
 // ==============================
 async function editar(id) {
-    const res = await fetch("http://localhost:3000/api/estudiantes");
-    const estudiantes = await res.json();
-    const est = estudiantes.find(e => e.id === id);
+  try {
+    // Ideal: endpoint por ID. Si tu backend no lo tiene, hacemos fallback.
+    let est = null;
 
-    document.getElementById("nombre").value = est.nombre;
-    document.getElementById("apellido").value = est.apellido;
-    document.getElementById("edad").value = est.edad;
-    document.getElementById("grado").value = est.grado;
-    document.getElementById("correo").value = est.correo;
+    try {
+      est = await apiFetch(`${API_BASE}/${id}`); // ✅ si existe GET /api/estudiante/:id
+    } catch {
+      const estudiantes = await apiFetch(API_BASE); // fallback
+      if (Array.isArray(estudiantes)) {
+        est = estudiantes.find((e) => e.id === id);
+      }
+    }
+
+    if (!est) {
+      alert("No se encontró el estudiante para editar.");
+      return;
+    }
+
+    document.getElementById("nombre").value = est.nombre ?? "";
+    document.getElementById("apellido").value = est.apellido ?? "";
+    document.getElementById("edad").value = est.edad ?? "";
+    document.getElementById("grado").value = est.grado ?? "";
+    document.getElementById("correo").value = est.correo ?? "";
 
     editId = id;
     form.querySelector("button").textContent = "Actualizar";
+  } catch (err) {
+    alert("No se pudo cargar el estudiante para editar. Revisa consola/logs.");
+  }
 }
 
 // ==============================
 // ELIMINAR
 // ==============================
-async function eliminar(id) {
-    await fetch(`http://localhost:3000/api/estudiantes/${id}`, {
-        method: "DELETE"
+async function eliminarEstudiante(id) {
+  try {
+    await apiFetch(`${API_BASE}/${id}`, {
+      method: "DELETE"
     });
-    cargarEstudiantes();
+    await cargarEstudiantes();
+  } catch (err) {
+    alert("No se pudo eliminar. Revisa consola/logs.");
+  }
 }
 
 // ==============================
 // MARCAR / DESMARCAR TODOS
 // ==============================
 async function marcarTodos(valor) {
-    await fetch("http://localhost:3000/api/estudiantes/asistencia/todos", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ asistencia: valor })
+  try {
+    await apiFetch(`${API_BASE}/asistencia/todos`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ asistencia: valor })
     });
-    cargarEstudiantes();
+    await cargarEstudiantes();
+  } catch (err) {
+    alert("No se pudo marcar/desmarcar todos. Revisa consola/logs.");
+  }
 }
 
 // ==============================
 // DESCARGAR EXCEL
 // ==============================
 async function descargarExcel() {
-    const res = await fetch("http://localhost:3000/api/estudiantes");
-    const estudiantes = await res.json();
+  try {
+    const estudiantes = await apiFetch(API_BASE);
 
-    const datos = estudiantes.map(est => ({
-        Nombre: est.nombre + " " + est.apellido,
-        Edad: est.edad,
-        Grado: est.grado,
-        Correo: est.correo || "",
-        Asistencia: est.asistencia ? "Presente" : "Ausente"
+    if (!Array.isArray(estudiantes)) {
+      alert("No hay datos válidos para exportar.");
+      return;
+    }
+
+    const datos = estudiantes.map((est) => ({
+      Nombre: `${est.nombre ?? ""} ${est.apellido ?? ""}`.trim(),
+      Edad: est.edad ?? "",
+      Grado: est.grado ?? "",
+      Correo: est.correo ?? "",
+      Asistencia: est.asistencia ? "Presente" : "Ausente"
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(datos);
@@ -142,28 +224,39 @@ async function descargarExcel() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Asistencia");
 
     XLSX.writeFile(workbook, "lista_asistencia.xlsx");
+  } catch (err) {
+    alert("No se pudo descargar el Excel. Revisa consola/logs.");
+  }
 }
 
 // ==============================
 // ACTUALIZAR RESUMEN
 // ==============================
 function actualizarResumen(estudiantes) {
-    const presentes = estudiantes.filter(e => e.asistencia).length;
-    const ausentes = estudiantes.length - presentes;
+  const lista = Array.isArray(estudiantes) ? estudiantes : [];
+  const presentes = lista.filter((e) => e.asistencia).length;
+  const ausentes = lista.length - presentes;
 
-    presentesSpan.textContent = presentes;
-    ausentesSpan.textContent = ausentes;
+  presentesSpan.textContent = presentes;
+  ausentesSpan.textContent = ausentes;
 
-    const total = estudiantes.length || 1;
+  const total = lista.length || 1;
 
-    document.querySelector(".bg-presentes").style.width =
-        `${(presentes / total) * 100}%`;
+  const bgPresentes = document.querySelector(".bg-presentes");
+  const bgAusentes = document.querySelector(".bg-ausentes");
 
-    document.querySelector(".bg-ausentes").style.width =
-        `${(ausentes / total) * 100}%`;
+  if (bgPresentes) bgPresentes.style.width = `${(presentes / total) * 100}%`;
+  if (bgAusentes) bgAusentes.style.width = `${(ausentes / total) * 100}%`;
 }
 
 // ==============================
 // INICIAR
 // ==============================
 cargarEstudiantes();
+
+// Exponer funciones al scope global (porque las llamas desde onclick="")
+window.actualizarAsistencia = actualizarAsistencia;
+window.editar = editar;
+window.eliminarEstudiante = eliminarEstudiante;
+window.marcarTodos = marcarTodos;
+window.descargarExcel = descargarExcel;
