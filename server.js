@@ -32,6 +32,8 @@ app.use("/api/docente", require("./routes/docente"));
 app.use("/api/estudiante", require("./routes/estudiante"));   // dashboard/materias/notas
 app.use("/api/estudiantes", require("./routes/estudiantes")); // CRUD para el HTML
 
-// ✅ Cloud Run usa PORT (8080 normalmente)
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
