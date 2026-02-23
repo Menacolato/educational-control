@@ -1,41 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Mis Materias</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educacional Control</title>
+    <link rel="stylesheet" href="/public/style.css">
 </head>
 <body>
 
-<h2>Mis Materias</h2>
+<div class="sidebar">
+    <h2>Educacional Control</h2>
+    <ul>
+        <li>Inicio</li>
+        <li><strong>Profesores</strong></li>
+        <li>Estudiantes</li>
+        <li>Notas</li>
+    </ul>
+</div>
 
-<table border="1">
-<thead>
-<tr>
-<th>Materia</th>
-</tr>
-</thead>
-<tbody id="tabla"></tbody>
-</table>
+<div class="main">
+
+    <div class="header">
+        <h1>Mis Materias</h1>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Materia</th>
+                    <th>Nota</th>
+                    <th>Progreso</th>
+                    <th>Trimestre</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tablaMaterias"></tbody>
+        </table>
+
+        <div class="stats">
+            <div class="stat">
+                <div>Promedio General: <span id="promedio">0.0</span></div>
+                <div class="bar bg-presentes"></div>
+            </div>
+            <div class="stat">
+                <div>Materias Activas: <span id="activas">0</span></div>
+                <div class="bar bg-ausentes"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
 
 <script>
+    const API_BASE = '/api/estudiantes';
 
-fetch("/api/estudiante/mis-materias")
-.then(res => res.json())
-.then(data => {
-
-    const tabla = document.getElementById("tabla");
-
-    data.forEach(m => {
-        tabla.innerHTML += `
-            <tr>
-                <td>${m.nombre}</td>
-            </tr>
-        `;
+    // Cargar datos al iniciar
+    document.addEventListener('DOMContentLoaded', function() {
+        cargarMaterias();
     });
 
-});
+    async function cargarMaterias() {
+        try {
+            // Cargar materias desde backend
+            const response = await fetch(`${API_BASE}/mis-materias`);
+            const materias = await response.json();
+            
+            // Cargar estadísticas
+            const statsResponse = await fetch(`${API_BASE}/estadisticas-materias`);
+            const statsData = await statsResponse.json();
 
+            // Mostrar tabla
+            mostrarTabla(materias);
+            
+            // Mostrar estadísticas
+            document.getElementById('promedio').textContent = statsData.promedio || '0.0';
+            document.getElementById('activas').textContent = statsData.activas || 0;
+
+        } catch (error) {
+            console.error('Error cargando datos');
+        }
+    }
+
+    function mostrarTabla(materias) {
+        const tbody = document.getElementById('tablaMaterias');
+        tbody.innerHTML = '';
+
+        materias.forEach(materia => {
+            const row = tbody.insertRow();
+            const estadoTexto = materia.activo ? 'Activa' : 'Inactiva';
+            const estadoClase = materia.activo ? 'estado-activo' : 'estado-inactivo';
+            
+            row.innerHTML = `
+                <td>${materia.nombre}</td>
+                <td><strong>${parseFloat(materia.nota || 0).toFixed(1)}</strong></td>
+                <td>
+                    <div class="progreso-materia">
+                        <div class="progreso-fill" style="width: ${materia.porcentaje || 0}%"></div>
+                        <span>${Math.round(materia.porcentaje || 0)}%</span>
+                    </div>
+                </td>
+                <td>${materia.trimestre || 'Pendiente'}</td>
+                <td><span class="estado ${estadoClase}">${estadoTexto}</span></td>
+            `;
+        });
+    }
 </script>
-
 </body>
 </html>
