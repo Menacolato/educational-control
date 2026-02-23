@@ -7,45 +7,19 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.set("trust proxy", 1); // recomendado en Cloud Run
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "secreto123",
+// Configuración de sesión
+app.use(session({
+    secret: "secreto123",
     resave: false,
-    saveUninitialized: true,
-    cookie: {
-      secure: false, // si luego pones HTTPS + proxy, se puede ajustar
-    },
-  })
-);
+    saveUninitialized: false,
+    cookie: { maxAge: 1000*60*60 } // 1 hora
+}));
 
-// ✅ Sirve los HTML/CSS/JS
+// Archivos estáticos
 app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ APIs
+// Rutas
 app.use("/api/auth", require("./routes/auth"));
-app.use("/api/admin", require("./routes/admin"));
 app.use("/api/docente", require("./routes/docente"));
 
-if (process.env.PREVIEW_MODE === "true") {
-  app.use("/api/estudiantes", require("./routes/estudiantes.preview"));
-  console.log("✅ PREVIEW_MODE activo: CRUD estudiantes en memoria");
-} else {
-  app.use("/api/estudiantes", require("./routes/estudiantes"));
-  console.log("✅ Modo normal: CRUD estudiantes con BD");
-}
-
-const PORT = process.env.PORT || 8080;
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
-});
-
-process.on("unhandledRejection", (reason) => {
-  console.error("Unhandled Rejection:", reason);
-});
-
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
-});
+app.listen(3000, () => console.log("Servidor en puerto 3000"));
