@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mis Materias</title>
+</head>
+<body>
+
+<h2>Mis Materias</h2>
+
+<table border="1">
+<thead>
+<tr>
+<th>Materia</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+
+<script>
+
+fetch("/api/estudiante/mis-materias")
+.then(res => res.json())
+.then(data => {
+
+    const tabla = document.getElementById("tabla");
+
+    data.forEach(m => {
+        tabla.innerHTML += `
+            <tr>
+                <td>${m.nombre}</td>
+            </tr>
+        `;
+    });
+
+});
+
+</script>
+
+</body>
+</html>

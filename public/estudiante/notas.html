@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mis Notas</title>
+</head>
+<body>
+
+<h2>Mis Notas</h2>
+
+<table border="1">
+<thead>
+<tr>
+<th>Tarea</th>
+<th>Nota</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+
+<script>
+
+fetch("/api/estudiante/mis-notas")
+.then(res => res.json())
+.then(data => {
+
+    const tabla = document.getElementById("tabla");
+
+    data.forEach(n => {
+        tabla.innerHTML += `
+            <tr>
+                <td>${n.titulo}</td>
+                <td>${n.nota}</td>
+                <td>${n.valor}</td>
+            </tr>
+        `;
+    });
+
+});
+
+</script>
+
+</body>
+</html>
