@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Notas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="script.js">
+</head>
+<body>
+<div class="sidebar">
+    <h2>Educacional Control</h2>
+    <ul>
+        <li>Inicio</li>
+        <li><strong>Profesores</strong></li>
+        <li>Estudiantes</li>
+        <li>Notas</li>
+    </ul>
+</div>
+<div class="main">
+    <div class="header">
+        <h1>Registro de Notas</h1>
+    </div>
+
+    <div class="card">
+        <form id="formNotas">
+            <input id="estudiante" placeholder="Estudiante" required>
+            <input id="materia" placeholder="Materia" required>
+            <input id="nota1" type="number" step="0.01" placeholder="Nota 1" required>
+            <input id="nota2" type="number" step="0.01" placeholder="Nota 2" required>
+            <input id="nota3" type="number" step="0.01" placeholder="Nota 3" required>
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Estudiante</th>
+                    <th>Materia</th>
+                    <th>Promedio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaNotas"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="notas.js"></script>
+</body>
+</html>
