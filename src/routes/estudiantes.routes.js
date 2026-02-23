@@ -39,7 +39,7 @@ router.put("/:id", (req, res) => {
     const { nombre, apellido, edad, grado, correo } = req.body;
 
     const sql = `
-        UPDATE estudiante 
+        UPDATE estudiantes 
         SET nombre=?, apellido=?, edad=?, grado=?, correo=?
         WHERE id=?
     `;
