@@ -5,7 +5,7 @@ const cors = require("cors");
 const path = require("path");
 
 const db = require("./db"); // IMPORTA db antes de usarlo
-const estudianteRoutes = require("./routes/estudiante.routes");
+const estudiantesRoutes = require("./routes/estudiantes.routes");
 
 const app = express();
 
@@ -38,7 +38,7 @@ app.get("/api/db-test", async (req, res) => {
 });
 
 // Rutas estudiantes (CRUD está dentro del archivo routes)
-app.use("/api/estudiantes", estudianteRoutes);
+app.use("/api/estudiantes", estudiantesRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
