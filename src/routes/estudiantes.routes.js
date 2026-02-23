@@ -1,97 +1,96 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db");
 
+// ✅ CRUD en memoria (preview)
+let estudiantes = [];
+let nextId = 1;
 
-// ==============================
-// CREATE
-// ==============================
+// ✅ log para confirmar que ESTA ruta sí está corriendo
+router.use((req, _res, next) => {
+  console.log("[/api/estudiantes]", req.method, req.url);
+  next();
+});
+
+// GET /api/estudiantes
+router.get("/", (_req, res) => {
+  res.json(estudiantes);
+});
+
+// GET /api/estudiantes/:id
+router.get("/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const est = estudiantes.find((e) => e.id === id);
+  if (!est) return res.status(404).json({ message: "No encontrado" });
+  res.json(est);
+});
+
+// POST /api/estudiantes
 router.post("/", (req, res) => {
-    const { nombre, apellido, edad, grado, correo } = req.body;
+  const { nombre, apellido, edad, grado, correo } = req.body;
 
-    const sql = `
-        INSERT INTO estudiante (nombre, apellido, edad, grado, correo, asistencia) 
-        VALUES (?, ?, ?, ?, ?, 0)
-    `;
+  if (!nombre || !apellido || !grado) {
+    return res.status(400).json({ message: "nombre, apellido y grado son requeridos" });
+  }
 
-    db.query(sql, [nombre, apellido, edad, grado, correo], (err) => {
-        if (err) return res.status(500).json(err);
-        res.json({ message: "Estudiante agregado correctamente" });
-    });
+  const nuevo = {
+    id: nextId++,
+    nombre: String(nombre).trim(),
+    apellido: String(apellido).trim(),
+    edad: edad !== undefined && edad !== "" ? Number(edad) : null,
+    grado: String(grado).trim(),
+    correo: correo ? String(correo).trim() : "",
+    asistencia: false,
+  };
+
+  estudiantes.push(nuevo);
+  res.status(201).json(nuevo);
 });
 
-
-// ==============================
-// READ
-// ==============================
-router.get("/", (req, res) => {
-    db.query("SELECT * FROM estudiante", (err, results) => {
-        if (err) return res.status(500).json(err);
-        res.json(results);
-    });
-});
-
-
-// ==============================
-// UPDATE COMPLETO
-// ==============================
+// PUT /api/estudiantes/:id
 router.put("/:id", (req, res) => {
-    const { nombre, apellido, edad, grado, correo } = req.body;
+  const id = Number(req.params.id);
+  const est = estudiantes.find((e) => e.id === id);
+  if (!est) return res.status(404).json({ message: "No encontrado" });
 
-    const sql = `
-        UPDATE estudiantes 
-        SET nombre=?, apellido=?, edad=?, grado=?, correo=?
-        WHERE id=?
-    `;
+  const { nombre, apellido, edad, grado, correo } = req.body;
 
-    db.query(sql, [nombre, apellido, edad, grado, correo, req.params.id], (err) => {
-        if (err) return res.status(500).json(err);
-        res.json({ message: "Estudiante actualizado correctamente" });
-    });
+  if (nombre !== undefined) est.nombre = String(nombre).trim();
+  if (apellido !== undefined) est.apellido = String(apellido).trim();
+  if (edad !== undefined) est.edad = edad === "" ? null : Number(edad);
+  if (grado !== undefined) est.grado = String(grado).trim();
+  if (correo !== undefined) est.correo = String(correo).trim();
+
+  res.json(est);
 });
 
-
-// ==============================
-// 🔥 MARCAR / DESMARCAR TODOS
-// (VA ANTES del :id/asistencia)
-// ==============================
-router.patch("/asistencia/todos", (req, res) => {
-    const { asistencia } = req.body;
-
-    const sql = "UPDATE estudiante SET asistencia=?";
-
-    db.query(sql, [asistencia ? 1 : 0], (err) => {
-        if (err) return res.status(500).json(err);
-        res.json({ message: "Asistencia actualizada para todos" });
-    });
-});
-
-
-// ==============================
-// PATCH SOLO ASISTENCIA
-// ==============================
+// PATCH /api/estudiantes/:id/asistencia
 router.patch("/:id/asistencia", (req, res) => {
-    const { asistencia } = req.body;
+  const id = Number(req.params.id);
+  const est = estudiantes.find((e) => e.id === id);
+  if (!est) return res.status(404).json({ message: "No encontrado" });
 
-    const sql = "UPDATE estudiante SET asistencia=? WHERE id=?";
-
-    db.query(sql, [asistencia ? 1 : 0, req.params.id], (err) => {
-        if (err) return res.status(500).json(err);
-        res.json({ message: "Asistencia actualizada correctamente" });
-    });
+  est.asistencia = Boolean(req.body.asistencia);
+  res.json(est);
 });
 
+// PATCH /api/estudiantes/asistencia/todos
+router.patch("/asistencia/todos", (req, res) => {
+  const valor = Boolean(req.body.asistencia);
+  estudiantes = estudiantes.map((e) => ({ ...e, asistencia: valor }));
+  res.json({ ok: true, asistencia: valor });
+});
 
-// ==============================
-// DELETE
-// ==============================
+// DELETE /api/estudiantes/:id
 router.delete("/:id", (req, res) => {
-    db.query("DELETE FROM estudiante WHERE id=?",
-        [req.params.id],
-        (err) => {
-            if (err) return res.status(500).json(err);
-            res.json({ message: "Estudiante eliminado" });
-        });
+  const id = Number(req.params.id);
+  const before = estudiantes.length;
+  estudiantes = estudiantes.filter((e) => e.id !== id);
+
+  if (estudiantes.length === before) {
+    return res.status(404).json({ message: "No encontrado" });
+  }
+
+  res.json({ ok: true });
 });
 
 module.exports = router;
