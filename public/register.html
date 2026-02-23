@@ -187,39 +187,53 @@ function mostrarCampos() {
 }
 
 mostrarCampos();
-
 function registrar() {
-    
 
-    fetch("http://localhost:3000/api/auth/register",  {
+    const nombreInput = document.getElementById("nombre");
+    const correoInput = document.getElementById("correo");
+    const passwordInput = document.getElementById("password");
+
+    const gradoInput = document.getElementById("grado");
+    const seccionInput = document.getElementById("seccion");
+    const turnoInput = document.getElementById("turno");
+    const materiaInput = document.getElementById("materia_principal");
+    const telefonoInput = document.getElementById("telefono");
+    const codigoAdminInput = document.getElementById("codigo_admin");
+
+    fetch("/api/auth/register", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            nombre: document.getElementById("nombre").value,
-            correo: document.getElementById("correo").value,
-            password: document.getElementById("password").value,
+            nombre: nombreInput.value,
+            correo: correoInput.value,
+            password: passwordInput.value,
             rol: rolSeleccionado,
-            grado: document.getElementById("grado")?.value,
-            seccion: document.getElementById("seccion")?.value,
-            turno: document.getElementById("turno")?.value,
-            materia_principal: document.getElementById("materia_principal")?.value,
-            telefono: document.getElementById("telefono")?.value,
-            codigo_admin: document.getElementById("codigo_admin")?.value
+            grado: gradoInput ? gradoInput.value : null,
+            seccion: seccionInput ? seccionInput.value : null,
+            turno: turnoInput ? turnoInput.value : null,
+            materia_principal: materiaInput ? materiaInput.value : null,
+            telefono: telefonoInput ? telefonoInput.value : null,
+            codigo_admin: codigoAdminInput ? codigoAdminInput.value : null
         })
     })
     .then(res => res.json())
     .then(data => {
-        alert(data.message);
-        if (data.message === "Usuario registrado correctamente") {
+        console.log(data);
+
+        if(data.message){
+            alert("Cuenta creada correctamente 🎉");
             window.location.href = "login.html";
+        }else{
+            alert(data.error || "Error al registrar");
         }
     })
     .catch(error => {
-        console.log(error);
+        console.error(error);
         alert("Error al conectar con el servidor");
     });
 }
-
+</script>
 </script>
 
 </body>
