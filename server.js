@@ -21,5 +21,6 @@ app.use(express.static(path.join(__dirname, "public")));
 // Rutas
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/docente", require("./routes/docente"));
+app.use("/api/notas", require("./routes/notas"));
 
 app.listen(3000, () => console.log("Servidor en puerto 3000"));
